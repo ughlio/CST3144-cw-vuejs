@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,62 +8,90 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
 </head>
+
 <body>
-<div id="app" class="container mt-3">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" v-text="sitename"></a>
-        
-        <!-- Search Bar -->
-        <form class="d-flex" role="search">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success" type="submit">Search</button>
-        </form>
-        
-        <!-- Sorting and Toggle View Controls -->
-        <div class="ms-auto">
-            <button class="btn btn-primary" @click="toggleView">
-                {{ showCart ? 'View Products' : 'View Cart' }}
-            </button>
+    <div id="app" class="container mt-3">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" v-text="sitename"></a>
 
-            <button class="btn btn-info" @click="toggleSortOrder">
-                Sort Order: {{ sortOrder === 1 ? 'Ascending' : 'Descending' }}
-                <i :class="sortOrder === 1 ? 'bi bi-arrow-up-short' : 'bi bi-arrow-down-short'"></i>
-            </button>
+            <!-- Search Bar -->
+            <form class="d-flex" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
 
-            <div class="btn-group">
-                <button class="btn btn-outline-secondary" 
-                        v-for="key in ['topic', 'location', 'price', 'space']"
-                        :class="{'active': sortKey === key}"
-                        @click="sortBy(key)">
-                    {{ key.charAt(0).toUpperCase() + key.slice(1) }}
+            <!-- Sorting and Toggle View Controls -->
+            <div class="ms-auto">
+                <button class="btn btn-primary" @click="toggleView" :disabled="cart.length === 0">
+                    {{ showCart ? 'View Products' : 'View Cart' }}
                 </button>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Content based on toggle -->
-    <div v-if="showCart">
-        <h2>Cart</h2>
-        <p>Items in your cart will be listed here.</p>
-    </div>
-    <div v-else>
-        <div class="row">
-            <div class="col-md-4" v-for="lesson in productList" :key="lesson.id">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ lesson.topic }}</h5>
-                        <p class="card-text">Location: {{ lesson.location }}</p>
-                        <p class="card-text">Price: £{{ lesson.price }}</p>
-                        <p class="card-text">Available Spaces: {{ lesson.space }}</p>
-                        <a href="#" class="btn btn-primary">Add to Cart</a>
+                <button class="btn btn-info" @click="toggleSortOrder">
+                    Sort Order: {{ sortOrder === 1 ? 'Ascending' : 'Descending' }}
+                    <i :class="sortOrder === 1 ? 'bi bi-arrow-up-short' : 'bi bi-arrow-down-short'"></i>
+                </button>
+
+                <div class="btn-group">
+                    <button class="btn btn-outline-secondary" v-for="key in ['topic', 'location', 'price', 'space']"
+                        :class="{'active': sortKey === key}" @click="sortBy(key)">
+                        {{ key.charAt(0).toUpperCase() + key.slice(1) }}
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Content based on toggle -->
+        <div v-if="showCart">
+            <h2>Cart</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Topic</th>
+                        <th>Location</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Available Space</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="item in cart" :key="item.id">
+                        <td>{{ item.topic }}</td>
+                        <td>{{ item.location }}</td>
+                        <td>£{{ item.price }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.availableSpace }}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" @click="removeFromCart(item)">Remove One</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        <div v-else>
+            <div class="row">
+                <div class="col-md-4" v-for="lesson in productList" :key="lesson.id">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ lesson.topic }}</h5>
+                            <p class="card-text">Location: {{ lesson.location }}</p>
+                            <p class="card-text">Price: £{{ lesson.price }}</p>
+                            <p class="card-text">Available Spaces: {{ lesson.space }}</p>
+                            <button class="btn btn-primary" @click="addToCart(lesson)" :disabled="lesson.space <= 0">
+                                Add to Cart
+                            </button>
+
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="script/app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"></script>
+    <script src="script/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"></script>
 </body>
+
 </html>
