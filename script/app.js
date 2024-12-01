@@ -6,7 +6,13 @@ var app = new Vue({
         productList: [],
         cart: [],
         sortKey: 'topic',
-        sortOrder: 1 // 1 for ascending, -1 for descending
+        sortOrder: 1, // 1 for ascending, -1 for descending
+        customerName: '',
+        customerPhone: '',
+        nameError: '',
+        phoneError: '',
+        isFormValid: false,
+        orderSubmitted: false
     },
     methods: {
         toggleView() {
@@ -31,24 +37,20 @@ var app = new Vue({
         },
         addToCart(lesson) {
             if (lesson.space > 0) {
-                // Reduce the available space by one
                 lesson.space--;
 
-                // Check if the lesson is already in the cart
                 let cartItem = this.cart.find(item => item.id === lesson.id);
                 if (cartItem) {
-                    // If it is, increase the quantity
                     cartItem.quantity++;
-                    cartItem.availableSpace = lesson.space; // Update the available space
+                    cartItem.availableSpace = lesson.space;
                 } else {
-                    // If not, add it to the cart
                     this.cart.push({
                         id: lesson.id,
                         topic: lesson.topic,
                         location: lesson.location,
                         price: lesson.price,
                         quantity: 1,
-                        availableSpace: lesson.space // Capture the available space after adding to cart
+                        availableSpace: lesson.space
                     });
                 }
             }
@@ -64,12 +66,102 @@ var app = new Vue({
                 if (cartItem.quantity === 0) {
                     this.cart = this.cart.filter(item => item.id !== cartItem.id);
                 }
-
-                // If the cart is empty after removal, switch back to product view
-                if (this.cart.length === 0) {
-                    this.showCart = false;
-                }
             }
+
+            // If the cart is empty after removal, switch back to product view
+            if (this.cart.length === 0) {
+                this.showCart = false;
+            }
+        },
+        validateName() {
+            const nameRegex = /^[A-Za-z\s]+$/;
+            if (!this.customerName) {
+                this.nameError = 'Name is required.';
+            } else if (!nameRegex.test(this.customerName)) {
+                this.nameError = 'Name must contain letters only.';
+            } else {
+                this.nameError = '';
+            }
+            this.checkFormValidity();
+        },
+        validatePhone() {
+            const phoneRegex = /^\d+$/;
+            if (!this.customerPhone) {
+                this.phoneError = 'Phone number is required.';
+            } else if (!phoneRegex.test(this.customerPhone)) {
+                this.phoneError = 'Phone must contain numbers only.';
+            } else {
+                this.phoneError = '';
+            }
+            this.checkFormValidity();
+        },
+        checkFormValidity() {
+            this.isFormValid = !this.nameError && !this.phoneError && this.customerName && this.customerPhone;
+        },
+        checkout() {
+            // Collect order data
+            const orderData = {
+                name: this.customerName,
+                phone: this.customerPhone,
+                lessons: this.cart.map(item => ({
+                    id: item.id,
+                    topic: item.topic,
+                    location: item.location,
+                    price: item.price,
+                    quantity: item.quantity
+                }))
+            };
+
+            // POST request to save the new order
+            fetch('https://cst3144-cw-server.onrender.com/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to submit order.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // After order is saved, update lesson spaces
+                const updatePromises = this.cart.map(item => {
+                    const newSpace = item.availableSpace;
+                    return fetch(`https://cst3144-cw-server.onrender.com/lessons/${item.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ space: newSpace })
+                    });
+                });
+
+                return Promise.all(updatePromises);
+            })
+            .then(responses => {
+                // Check if all PUT requests were successful
+                if (responses.some(response => !response.ok)) {
+                    throw new Error('Failed to update lesson spaces.');
+                }
+                // Show confirmation message
+                this.orderSubmitted = true;
+
+                // Reset cart and form
+                this.cart = [];
+                this.customerName = '';
+                this.customerPhone = '';
+                this.isFormValid = false;
+
+                // Switch back to the product list
+                this.showCart = false;
+            })
+            .catch(error => {
+                console.error(error);
+                alert('An error occurred while processing your order.');
+            });
         }
     },
     created() {
@@ -77,7 +169,7 @@ var app = new Vue({
             .then(response => response.json())
             .then(data => {
                 this.productList = data.map(item => ({
-                    id: item._id, // Use the _id from the server data
+                    id: item._id,
                     topic: item.topic,
                     location: item.location,
                     price: item.price,

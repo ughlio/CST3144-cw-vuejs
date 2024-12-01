@@ -67,6 +67,33 @@
                     </tr>
                 </tbody>
             </table>
+
+            <!-- Checkout Form -->
+            <div class="checkout-form mt-4">
+                <h3>Checkout</h3>
+                <form @submit.prevent="checkout">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name:</label>
+                        <input type="text" id="name" class="form-control" v-model="customerName" @input="validateName">
+                        <div v-if="nameError" class="text-danger">{{ nameError }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone:</label>
+                        <input type="text" id="phone" class="form-control" v-model="customerPhone"
+                            @input="validatePhone">
+                        <div v-if="phoneError" class="text-danger">{{ phoneError }}</div>
+                    </div>
+                    <button type="submit" class="btn btn-success" :disabled="!isFormValid">
+                        Checkout
+                    </button>
+                </form>
+            </div>
+
+            <!-- Confirmation Message -->
+            <div v-if="orderSubmitted" class="alert alert-success mt-3">
+                Your order has been submitted!
+            </div>
+
         </div>
 
 
