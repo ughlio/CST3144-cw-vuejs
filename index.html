@@ -101,7 +101,7 @@
             <div class="row">
                 <div class="col-md-4" v-for="lesson in productList" :key="lesson.id">
                     <div class="card">
-                        <img src="lesson.imageUrl" class="card-img-top" alt="Lesson Image">
+                        <img :src="lesson.imageUrl" class="card-img-top" alt="Lesson Image">
                         <div class="card-body">
                             <h5 class="card-title">{{ lesson.topic }}</h5>
                             <p class="card-text">Location: {{ lesson.location }}</p>
