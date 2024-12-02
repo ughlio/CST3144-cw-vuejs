@@ -122,48 +122,48 @@ var app = new Vue({
                 },
                 body: JSON.stringify(orderData)
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to submit order.');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // After order is saved, update lesson spaces
-                const updatePromises = this.cart.map(item => {
-                    const newSpace = item.availableSpace;
-                    return fetch(`https://cst3144-cw-server.onrender.com/lessons/${item.id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ space: newSpace })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to submit order.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // After order is saved, update lesson spaces
+                    const updatePromises = this.cart.map(item => {
+                        const newSpace = item.availableSpace;
+                        return fetch(`https://cst3144-cw-server.onrender.com/lessons/${item.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ space: newSpace })
+                        });
                     });
+
+                    return Promise.all(updatePromises);
+                })
+                .then(responses => {
+                    // Check if all PUT requests were successful
+                    if (responses.some(response => !response.ok)) {
+                        throw new Error('Failed to update lesson spaces.');
+                    }
+                    // Show confirmation message
+                    this.orderSubmitted = true;
+
+                    // Reset cart and form
+                    this.cart = [];
+                    this.customerName = '';
+                    this.customerPhone = '';
+                    this.isFormValid = false;
+
+                    // Switch back to the product list
+                    this.showCart = false;
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('An error occurred while processing your order.');
                 });
-
-                return Promise.all(updatePromises);
-            })
-            .then(responses => {
-                // Check if all PUT requests were successful
-                if (responses.some(response => !response.ok)) {
-                    throw new Error('Failed to update lesson spaces.');
-                }
-                // Show confirmation message
-                this.orderSubmitted = true;
-
-                // Reset cart and form
-                this.cart = [];
-                this.customerName = '';
-                this.customerPhone = '';
-                this.isFormValid = false;
-
-                // Switch back to the product list
-                this.showCart = false;
-            })
-            .catch(error => {
-                console.error(error);
-                alert('An error occurred while processing your order.');
-            });
         }
     },
     created() {
@@ -176,7 +176,7 @@ var app = new Vue({
                     location: item.location,
                     price: item.price,
                     space: item.space,
-                    imageUrl: '//cst3144-cw-server.onrender.com/images/${item.imageName}'
+                    imageUrl: 'https://cst3144-cw-server.onrender.com/images/${item.imageName}'
                 }));
             })
             .catch(error => console.error('Failed to load lessons:', error));
