@@ -176,7 +176,7 @@ var app = new Vue({
                     location: item.location,
                     price: item.price,
                     space: item.space,
-                    imageUrl: lesson.imageUrl 
+                    imageUrl: item.imageUrl 
                 }));
             })
             .catch(error => console.error('Failed to load lessons:', error));
