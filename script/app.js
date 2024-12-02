@@ -50,7 +50,8 @@ var app = new Vue({
                         location: lesson.location,
                         price: lesson.price,
                         quantity: 1,
-                        availableSpace: lesson.space
+                        availableSpace: lesson.space,
+                        imageUrl: lesson.imageUrl
                     });
                 }
             }
@@ -108,7 +109,8 @@ var app = new Vue({
                     topic: item.topic,
                     location: item.location,
                     price: item.price,
-                    quantity: item.quantity
+                    quantity: item.quantity,
+                    imageUrl: item.imageUrl
                 }))
             };
 
@@ -173,7 +175,8 @@ var app = new Vue({
                     topic: item.topic,
                     location: item.location,
                     price: item.price,
-                    space: item.space
+                    space: item.space,
+                    imageUrl: lesson.imageUrl 
                 }));
             })
             .catch(error => console.error('Failed to load lessons:', error));
