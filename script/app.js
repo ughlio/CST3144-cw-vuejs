@@ -176,7 +176,7 @@ var app = new Vue({
                     location: item.location,
                     price: item.price,
                     space: item.space,
-                    imageUrls: '//cst3144-cw-server.onrender.com/images/${item.imageName}'
+                    imageUrl: '//cst3144-cw-server.onrender.com/images/${item.imageName}'
                 }));
             })
             .catch(error => console.error('Failed to load lessons:', error));
